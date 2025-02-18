@@ -17,7 +17,7 @@ def convert_video_to_audio(input_video, output_audio):
 
 #This is the main worker thread responsible for converting the audio to subtitle
 def worker():
-    translator= Translator("/home/saugat/Projects/Major Project/translation-server/whisper-model.pt")
+    translator= Translator("tiny")
     while True:
         item = queueManager.get()
         print(f'Working on {item}')
