@@ -1,3 +1,4 @@
+import math
 from fastapi import APIRouter
 from fastapi.responses import FileResponse, StreamingResponse, JSONResponse
 from ..db.db import dbManagerDep
@@ -47,8 +48,9 @@ async def export_project(id: str, dbManager: dbManagerDep):
 
 
 def format_timestamp(ms: int) -> str:
+    ms= ms*1000
     """Converts milliseconds to SRT timestamp format (HH:MM:SS,mmm)."""
-    hours = ms // 3600000
+    hours = (ms) // 3600000
     minutes = (ms % 3600000) // 60000
     seconds = (ms % 60000) // 1000
     milliseconds = ms % 1000
@@ -65,8 +67,8 @@ async def export_subtitle(id:str,dbManager: dbManagerDep):
     # Generate SRT content
     srt_content = ""
     for i, subtitle in enumerate(subtitles, start=1):
-        start_time = format_timestamp(subtitle.start_time)
-        end_time = format_timestamp(subtitle.end_time)
+        start_time = format_timestamp(int(math.floor(subtitle.start_time)))
+        end_time = format_timestamp(int(math.floor(subtitle.end_time)))
         srt_content += f"{i}\n{start_time} --> {end_time}\n{subtitle.text}\n\n"
 
     # Save to a temporary file

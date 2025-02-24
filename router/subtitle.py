@@ -1,4 +1,6 @@
+from typing import Optional
 from fastapi import APIRouter, HTTPException
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 from ..db.model.subtitle import Subtitle
@@ -10,36 +12,36 @@ router = APIRouter(
     tags=["Subtitle CRUD"],
     responses={404: {"description": "Not found"}},
 )
-
 class SubtitleCreate(BaseModel):
-    project_id: str
-    language: str
-    start_time: int
-    end_time: int
+    id: int
+    start: int
+    end: int
     text: str
+    language: str
 
 
-@router.post("/", response_model=Subtitle)
+
+@router.post("/")
 def create_subtitle(subtitle: SubtitleCreate, db: dbManagerDep):
-    if not db.is_project_available(subtitle.project_id):
+    if not db.is_project_available(subtitle.id):
         raise HTTPException(status_code=404, detail="Project not found")
     return db.add_subtitle(
-        subtitle.project_id, subtitle.language, subtitle.start_time, subtitle.end_time, subtitle.text
+        subtitle.id, subtitle.language, subtitle.start, subtitle.end, subtitle.text
     )
 
-@router.put("/{subtitle_id}", response_model=Subtitle)
-def update_subtitle(subtitle_id: int, subtitle_update: Subtitle, db: dbManagerDep):
-    subtitle = db.update_subtitle(subtitle_id, subtitle_update.text)
+@router.put("/{subtitle_id}")
+def update_subtitle(subtitle_id: int, subtitle_update: SubtitleCreate, db: dbManagerDep):
+    subtitle = db.update_subtitle(subtitle_id, start_time=subtitle_update.start,end_time=subtitle_update.end,text=subtitle_update.text,language=subtitle_update.language)
+    print(f"To update subtitle:{subtitle_update.start} and {subtitle_update.end}")
     if not subtitle:
         raise HTTPException(status_code=404, detail="Subtitle not found")
     return subtitle
 
-@router.delete("/{subtitle_id}", response_model=dict)
+@router.delete("/{subtitle_id}")
 def delete_subtitle(subtitle_id: int, db: dbManagerDep):
-    with db.engine.begin() as session:
-        subtitle = session.get(Subtitle, subtitle_id)
-        if not subtitle:
-            raise HTTPException(status_code=404, detail="Subtitle not found")
-        session.delete(subtitle)
-        session.commit()
-    return {"message": "Subtitle deleted successfully"}
+    status= db.delete_subtitle(subtitle_id=subtitle_id)
+    if status:
+        return JSONResponse( {"Message": "Subtitle deleted successfully","data":None},status_code=200)
+    else:
+        return JSONResponse( {"Message": "Something error occured while deleting","data":None},status_code=400)
+    

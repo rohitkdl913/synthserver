@@ -1,4 +1,4 @@
-from typing import Annotated, List
+from typing import Annotated, List, Optional
 from fastapi import Depends
 from sqlmodel import SQLModel, Session, create_engine, select
 
@@ -74,15 +74,36 @@ class DBManager:
             subtitles = session.exec(select(Subtitle).where(Subtitle.project_id == project_id)).all()
             return subtitles
 
-    def update_subtitle(self, subtitle_id: int, text: str):
+    def update_subtitle(self, subtitle_id: int, start_time: Optional[int] = None, 
+                    end_time: Optional[int] = None, text: Optional[str] = None, 
+                    language: Optional[str] = None) -> Subtitle | None:
         with Session(self.engine) as session:
             subtitle = session.get(Subtitle, subtitle_id)
             if subtitle:
-                subtitle.text = text
+                if start_time is not None:
+                    subtitle.start_time = start_time
+                if end_time is not None:
+                    subtitle.end_time = end_time
+                if text is not None:
+                    subtitle.text = text
+                if language is not None:
+                    subtitle.language = language
+
                 session.commit()
                 session.refresh(subtitle)
                 return subtitle
             return None
+    def delete_subtitle(self, subtitle_id:int):
+        with Session(self.engine) as session:
+            # Fetch the project by ID
+            subtitle = session.get(Subtitle, subtitle_id)
+            if subtitle:
+                # Delete the project
+                session.delete(subtitle)
+                session.commit()
+                return True
+            return False
+    
     def delete_project(self,project_id:str)->bool:
         with Session(self.engine) as session:
             # Fetch the project by ID
