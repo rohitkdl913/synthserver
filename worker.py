@@ -17,7 +17,7 @@ def convert_video_to_audio(input_video, output_audio):
 
 #This is the main worker thread responsible for converting the audio to subtitle
 def worker():
-    translator= Translator("tiny")
+    translator= Translator("./whisper-model.pt")
     while True:
         item = queueManager.get()
         print(f'Working on {item}')

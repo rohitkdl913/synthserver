@@ -12,7 +12,11 @@ class SSEQueueManager:
     def initialize_queue(self, project_id: str):
         if project_id not in self.queues:
             self.queues[project_id] = asyncio.Queue()
-
+     # Add this method to check queue existence
+    def queue_exists(self, project_id: str) -> bool:
+        return project_id in self.queues
+    
+    
     async def getFromQueue(self, project_id: str) -> Optional[Subtitle]:
         return await asyncio.wait_for(self.queues[project_id].get(), timeout=10.0)
        

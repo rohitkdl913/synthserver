@@ -28,7 +28,7 @@ def hf_to_whisper_states(text):
     return text
 
 # Load HF Model
-hf_state_dict = torch.load("/home/saugat/Desktop/whisper_based_trained.pt", map_location=torch.device('cpu'))    # pytorch_model.bin file
+hf_state_dict = torch.load("/home/saugat/Desktop/whisper-base-trained_wt.pt", map_location=torch.device('cpu'))    # pytorch_model.bin file
 
 # Rename layers
 for key in list(hf_state_dict.keys())[:]:

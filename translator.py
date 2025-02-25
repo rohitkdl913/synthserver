@@ -7,13 +7,15 @@ from .db.model.subtitle import Subtitle
 from .queue_manager import sseQueueManager
 
 from .db.db import dbManager
-
+import torch
 
 # Audio processing parameters
 MIN_SILENCE_LEN = 700  # Min silence duration (ms) to split audio
 SILENCE_THRESH = -40  # Silence threshold in dBFS
 SAMPLE_RATE = 16000  # Whisper expects 16kHz audio
 
+
+device= "cuda" if torch.cuda.is_available() else "cpu"
 
 
 class Translator:
@@ -27,7 +29,7 @@ class Translator:
         segments= result["segments"]
         for segment in segments:
                 dbManager.add_subtitle(project_id=projectId,start_time=segment["start"],end_time=segment["end"],text=segment["text"],language="nepali")
-                await sseQueueManager.sendToQueue(projectId,Subtitle(project_id=projectId,start_time=segment["start"],end_time=segment["end"],text=segment["text"],language="nepali"))
+                # await sseQueueManager.sendToQueue(projectId,Subtitle(project_id=projectId,start_time=segment["start"],end_time=segment["end"],text=segment["text"],language="nepali"))
         await sseQueueManager.sendToQueue(projectId,None)    
     
     async def transcribe_realtime(self,projectId:str,audioPath:str):

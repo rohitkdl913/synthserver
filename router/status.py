@@ -57,13 +57,19 @@ async def event_generator(project_id: str):
         }
         return
     
+    if not sseQueueManager.isProjectInQueue(project_id=project_id):
+        yield {
+            "event": "done",
+            "data": "Project not found"
+        }
+        dbManager.update_project_status(project_id,True)
+        return
+        
     while True:
         try:
             subtitle = await sseQueueManager.getFromQueue(project_id)
            
             if subtitle is None:
-                # yield "event: done\ndata: [DONE] \n\n"
-                # break
                 logger.debug(" I am done with transcribtion")
                 print(" I am done with transcribtion")
                 yield {

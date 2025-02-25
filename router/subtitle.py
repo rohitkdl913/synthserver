@@ -12,13 +12,20 @@ router = APIRouter(
     tags=["Subtitle CRUD"],
     responses={404: {"description": "Not found"}},
 )
-class SubtitleCreate(BaseModel):
+class SubtitleUpdate(BaseModel):
     id: int
     start: int
     end: int
     text: str
     language: str
 
+
+class SubtitleCreate(BaseModel):
+    id:str #This is project id
+    start: int
+    end: int
+    text: str
+    language: str
 
 
 @router.post("/")
@@ -30,7 +37,7 @@ def create_subtitle(subtitle: SubtitleCreate, db: dbManagerDep):
     )
 
 @router.put("/{subtitle_id}")
-def update_subtitle(subtitle_id: int, subtitle_update: SubtitleCreate, db: dbManagerDep):
+def update_subtitle(subtitle_id: int, subtitle_update: SubtitleUpdate, db: dbManagerDep):
     subtitle = db.update_subtitle(subtitle_id, start_time=subtitle_update.start,end_time=subtitle_update.end,text=subtitle_update.text,language=subtitle_update.language)
     print(f"To update subtitle:{subtitle_update.start} and {subtitle_update.end}")
     if not subtitle:
