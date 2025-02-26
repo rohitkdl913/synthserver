@@ -38,3 +38,27 @@ def delete_directory(directory_path: str):
             print(f"Error occurred while deleting directory: {e}")
     else:
         print(f"Directory '{directory_path}' does not exist.")
+
+def write_to_file(dict:str):
+    with open("transcribtion.json","+w") as file:
+        file.write(dict)
+    
+   
+def batch_word_timestamp(size:int,data:dict)->list: 
+    # Extract words from segments
+    words_list = [word for segment in data['segments'] for word in segment['words']]
+    size = 10
+
+    # Process chunks and build final output
+    final_output = [
+        {
+            "start": chunk[0]['start'],
+            "end": chunk[-1]['end'],
+            "text": ' '.join(word['word'] for word in chunk)
+        }
+        for i in range(0, len(words_list), size)
+        if (chunk := words_list[i:i + size])
+    ]
+    return final_output
+        
+    
