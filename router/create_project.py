@@ -5,8 +5,10 @@ import uuid
 import aiofiles
 import ffmpeg
 from typing import Annotated
-from fastapi import APIRouter, Body, File, Form, UploadFile, HTTPException
+from fastapi import APIRouter, Body, Depends, File, Form, UploadFile, HTTPException
 from pydantic import BaseModel
+
+from ..router.middleware.get_user_email import get_current_user
 
 from ..db.db import dbManagerDep
 from ..queue_manager import queueManager,sseQueueManager
@@ -35,7 +37,8 @@ class SettingsModel:
 async def create_project(
     dbManager: dbManagerDep,
     project_setting: str = Form(...),
-    in_file: UploadFile = File(...)
+    in_file: UploadFile = File(...),
+    email: str = Depends(get_current_user)
 ):
     # Validate file format
     file_ext = os.path.splitext(in_file.filename)[1][1:].lower()
@@ -56,17 +59,25 @@ async def create_project(
     )
     
     # Store in database with file info
-    dbManager.add_projects(
+    new_project= dbManager.add_projects(
         projectName=settings.projectName,
         projectId=unique_id,
         translationType=settings.translationType,
         video_file=video_file,
-        thumbnail_file=thumbnail_file
+        thumbnail_file=thumbnail_file,
+        user_email=email
     )
     
     queueManager.put_nowait(unique_id)
     sseQueueManager.initialize_queue(unique_id)
-    return {"Message": "Successfully loaded in queue", "data": {"id": unique_id}}
+    return {"Message": "Successfully loaded in queue", "data": {
+            "id": new_project.id,
+            "name": new_project.name,
+            "translationType": new_project.translationType,
+            "status": new_project.status,
+            "updatedAt": new_project.updated_at,
+            "createdAt": new_project.created_at
+        } }
 
 async def create_project_template(uploaded_file: UploadFile, settings: SettingsModel):
     base_dir = os.path.join(os.getcwd(), "projects", settings.projectId)

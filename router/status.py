@@ -30,7 +30,7 @@ async def get_status(id:str,dbManager:dbManagerDep):
     project= dbManager.get_project_by_id(id)
     if project == None:
         return 400, {"Message": "There is no project of id", "data":None}
-    #if true that means completed find the json file from project and send it directly
+   
     if project.status ==True:
         data= dbManager.get_subtitles_by_project(id)
         return {"Message": "Successfully transcribed!", "data": {"id": id,"name":project.name,"translationType":project.translationType,"status":project.status,"subtitle":data}}
@@ -128,11 +128,38 @@ async def get_projects(dbManager:dbManagerDep):
             "id": p.id,
             "name": p.name,
             "translationType": p.translationType,
-            "status": p.status
+            "status": p.status,
+            "updatedAt": p.updated_at,
+            "createdAt": p.created_at
         } 
         for p in projects
     ]
     return {
         "Message": "Success",
+        "data": filtered_projects
+    }
+
+
+@router.get("/recent")
+async def get_recent_projects(dbManager: dbManagerDep):
+    projects = dbManager.get_all_project()
+    recent_projects = sorted(projects, key=lambda p: p.updated_at, reverse=True)
+    
+    recent_projects = recent_projects[:3]
+    
+    filtered_projects = [
+        {
+            "id": p.id,
+            "name": p.name,
+            "translationType": p.translationType,
+            "status": p.status,
+            "updatedAt": p.updated_at,
+            "createdAt": p.created_at
+        }
+        for p in recent_projects
+    ]
+    
+    return {
+        "Message": "Recent projects retrieved successfully",
         "data": filtered_projects
     }

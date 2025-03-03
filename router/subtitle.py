@@ -21,7 +21,7 @@ class SubtitleUpdate(BaseModel):
 
 
 class SubtitleCreate(BaseModel):
-    id:str #This is project id
+    id:str 
     start: int
     end: int
     text: str
@@ -29,12 +29,14 @@ class SubtitleCreate(BaseModel):
 
 
 @router.post("/")
-def create_subtitle(subtitle: SubtitleCreate, db: dbManagerDep):
+def create_subtitle(subtitle: SubtitleCreate, db: dbManagerDep)->Subtitle:
     if not db.is_project_available(subtitle.id):
         raise HTTPException(status_code=404, detail="Project not found")
-    return db.add_subtitle(
+    new_subitle= db.add_subtitle(
         subtitle.id, subtitle.language, subtitle.start, subtitle.end, subtitle.text
     )
+    print(f"New subtitle created {new_subitle.json()}")
+    return new_subitle
 
 @router.put("/{subtitle_id}")
 def update_subtitle(subtitle_id: int, subtitle_update: SubtitleUpdate, db: dbManagerDep):

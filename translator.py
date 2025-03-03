@@ -1,5 +1,6 @@
 
 import json
+import math
 import numpy as np
 import whisper
 from pydub import AudioSegment, silence
@@ -40,8 +41,7 @@ class Translator:
         # for idx,single_word in enumerate(words_list):
         segments= batch_word_timestamp(size=10,data=result)
         for segment in segments:                        
-                dbManager.add_subtitle(project_id=projectId,start_time=segment["start"],end_time=segment["end"],text=segment["text"],language="nepali")
-                # await sseQueueManager.sendToQueue(projectId,Subtitle(project_id=projectId,start_time=segment["start"],end_time=segment["end"],text=segment["text"],language="nepali"))
+                dbManager.add_subtitle(project_id=projectId,start_time=math.floor(segment["start"]),end_time=math.floor(segment["end"]),text=segment["text"],language="nepali")
         await sseQueueManager.sendToQueue(projectId,None)    
     
     async def transcribe_realtime(self,projectId:str,audioPath:str):
@@ -70,8 +70,8 @@ class Translator:
             segments = result["segments"]
             print(f"Chunk {i+1}: {segments}")
             for segment in segments:
-                dbManager.add_subtitle(project_id=projectId,start_time=segment["start"],end_time=segment["end"],text=segment["text"],language="nepali")
-                await sseQueueManager.sendToQueue(projectId,Subtitle(project_id=projectId,start_time=segment["start"],end_time=segment["end"],text=segment["text"],language="nepali"))
+                dbManager.add_subtitle(project_id=projectId,start_time=math.floor(segment["start"]),end_time=math.floor(segment["end"]),text=segment["text"],language="nepali")
+                await sseQueueManager.sendToQueue(projectId,Subtitle(project_id=projectId,start_time=math.floor(segment["start"]),end_time=math.floor(segment["end"]),text=segment["text"],language="nepali"))
         await sseQueueManager.sendToQueue(projectId,None)    
             
 

@@ -2,6 +2,8 @@ from typing import Annotated, List, Optional
 from fastapi import Depends
 from sqlmodel import SQLModel, Session, create_engine, select
 
+from .model.user import User,pwd_context
+
 from .model.subtitle import Subtitle
 from .model.project import Project
 
@@ -13,9 +15,10 @@ class DBManager:
         self.connect_args = {"check_same_thread": False}
         self.engine = create_engine(sqlite_url, connect_args=self.connect_args)
         SQLModel.metadata.create_all(self.engine)
-        
-    def add_projects(self, projectName: str, projectId: str, translationType: str, 
-                video_file: str, thumbnail_file: str):
+    
+    
+    
+    def add_projects(self, projectName: str, projectId: str, translationType: str, video_file: str, thumbnail_file: str, user_email: str)->Project:
         with Session(self.engine) as session:
             project = Project(
                 id=projectId,
@@ -23,10 +26,26 @@ class DBManager:
                 translationType=translationType,
                 status=False,
                 video_file=video_file,
-                thumbnail_file=thumbnail_file
+                thumbnail_file=thumbnail_file,
+                user_email=user_email
             )
             session.add(project)
             session.commit()
+            session.refresh(project)
+            return project
+    
+    def delete_project(self,project_id:str)->bool:
+        with Session(self.engine) as session:
+            project = session.get(Project, project_id)
+            
+            if project:             
+                session.exec(select(Subtitle).where(Subtitle.project_id == project_id))
+                session.commit()
+
+                session.delete(project)
+                session.commit()
+                return True
+            return False
     
     def check_project_status(self,projectId:str)->bool | None:
         with Session(self.engine) as session:
@@ -61,10 +80,11 @@ class DBManager:
             projects = session.exec(select(Project)).all()
             return projects
     
-    def add_subtitle(self, project_id: str, language: str, start_time: int, end_time: int, text: str):
+    def add_subtitle(self, project_id: str, language: str, start_time: int, end_time: int, text: str) -> Subtitle:
         with Session(self.engine) as session:
             subtitle = Subtitle(project_id=project_id, language=language, start_time=start_time, end_time=end_time, text=text)
             session.add(subtitle)
+            subtitle.update_updated_at(session)
             session.commit()
             session.refresh(subtitle)
             return subtitle
@@ -88,37 +108,34 @@ class DBManager:
                     subtitle.text = text
                 if language is not None:
                     subtitle.language = language
-
+                subtitle.update_updated_at(session)
                 session.commit()
                 session.refresh(subtitle)
                 return subtitle
             return None
+    
     def delete_subtitle(self, subtitle_id:int):
         with Session(self.engine) as session:
-            # Fetch the project by ID
             subtitle = session.get(Subtitle, subtitle_id)
             if subtitle:
-                # Delete the project
+                subtitle.update_updated_at(session)
                 session.delete(subtitle)
                 session.commit()
                 return True
             return False
     
-    def delete_project(self,project_id:str)->bool:
+    def add_user(self, email: str, password: str, name: str) -> User:
         with Session(self.engine) as session:
-            # Fetch the project by ID
-            project = session.get(Project, project_id)
-            
-            if project:
-                # Delete associated subtitles first (optional: ensure cascading delete)
-                session.exec(select(Subtitle).where(Subtitle.project_id == project_id))
-                session.commit()
+            if session.get(User, email):
+                raise Exception("Account from this email already exists")
+            user = User(email=email, password_hash=pwd_context.hash(password), name=name)
+            session.add(user)
+            session.commit()
+            return user
 
-                # Delete the project
-                session.delete(project)
-                session.commit()
-                return True
-            return False
+    def get_user_by_email(self, email: str) -> Optional[User]:
+        with Session(self.engine) as session:
+            return session.get(User, email)
 
 dbManager = DBManager()       
 def get_DbManager()->DBManager:
