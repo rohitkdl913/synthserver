@@ -1,7 +1,7 @@
 openai-whisper
 fastapi[standard]
 sqlmodel
-ffmpeg
+ffmpeg-python
 numpy
 pydub
 torch
@@ -9,3 +9,7 @@ shutil
 aiofiles
 logging
 asyncio
+passlib
+bcrypt
+pyjwt
+google-genai
