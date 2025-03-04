@@ -51,16 +51,16 @@ def login(request: LoginRequest, dbManager: dbManagerDep):
         response = JSONResponse(content={"message": "Login successful","data":{"name":user.name,"email":user.email,"access_token":access_token}})
     
        
-        # response.set_cookie(
-        #     key="access_token",
-        #     value=access_token,
-        #     httponly=True,
-        #     secure=True,  
-        #     max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60,  # Time in seconds
-        #     expires=datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES),
-        # )
+        response.set_cookie(
+            key="access_token",
+            value=access_token,
+            httponly=True,
+            secure=True,  
+            max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60,  # Time in seconds
+            expires=datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES),
+        )
         # print(response.headers['cookies'])
-        # print(response.headers)
+        print(response.headers)
         return response
 
 @router.post("/logout")
