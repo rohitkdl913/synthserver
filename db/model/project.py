@@ -17,6 +17,8 @@ class Project(SQLModel, table=True):
     video_file: str
     thumbnail_file: str
     
+    video_duration: int
+    
     subtitles: List["Subtitle"] = Relationship(back_populates="project", sa_relationship_kwargs={"cascade": "all, delete-orphan"})
     
     user_email: str = Field(foreign_key="user.email")

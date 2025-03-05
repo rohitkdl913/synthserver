@@ -20,17 +20,17 @@ def worker():
     translator= Translator("./whisper-model.pt")
     while True:
         item = queueManager.get()
-        print(f'Working on {item}')
-        print(f'Finished {item}')
+        print(f'Working on {item.project_id}')
+        print(f'Finished {item.project_id}')
         
-        videoPath= get_project_video_path(item)
-        audioPath= get_project_audio_path(item)
-        subtitlePath= get_project_subtitle_path(item)
+        videoPath= get_project_video_path(item.project_id)
+        audioPath= get_project_audio_path(item.project_id)
+        subtitlePath= get_project_subtitle_path(item.project_id)
         convert_video_to_audio(input_video=videoPath,output_audio=audioPath)
         
         # asyncio.run(translator.transcribe_realtime(audioPath=audioPath,projectId=item))
-        asyncio.run(translator.transcribe(item,audioPath))
-        dbManager.update_project_status(item,True)
+        asyncio.run(translator.transcribe(item.project_id,audioPath,video_duration=item.video_duration))
+        dbManager.update_project_status(item.project_id,True)
         
 
 

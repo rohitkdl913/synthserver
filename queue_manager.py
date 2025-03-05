@@ -3,8 +3,27 @@ from typing import Optional
 from .db.model.subtitle import Subtitle
 import asyncio
 
+
+
+
+class QueuingItem:   
+    def __init__(self, project_id: str,video_duration:float):
+        self.project_id = project_id
+        self.video_duration = video_duration
+    
+    
+
+
 #For now we can simply use raw queue for queuing the work
-queueManager = Queue()
+queueManager:Queue[QueuingItem] = Queue()
+
+
+
+    
+
+
+
+
 class SSEQueueManager:
     def __init__(self):
         self.queues:dict[str:asyncio.Queue] = {}

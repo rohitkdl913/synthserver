@@ -130,7 +130,8 @@ async def get_projects(dbManager:dbManagerDep):
             "translationType": p.translationType,
             "status": p.status,
             "updatedAt": p.updated_at,
-            "createdAt": p.created_at
+            "createdAt": p.created_at,
+            "duration":p.video_duration
         } 
         for p in projects
     ]

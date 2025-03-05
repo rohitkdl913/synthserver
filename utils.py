@@ -1,6 +1,8 @@
 import os
 import shutil
 
+import ffmpeg
+
 from .db.db import dbManager
 def get_project_path(projectId:str)->str:
     projectsPath=os.path.join("projects", f"{projectId}")
@@ -44,9 +46,12 @@ def write_to_file(dict:str):
         file.write(dict)
     
    
-def batch_word_timestamp(size:int,data:dict)->list: 
+def batch_word_timestamp(size:int,data:dict,duration:float)->list: 
     # Extract words from segments
-    words_list = [word for segment in data['segments'] for word in segment['words']]
+    words_list = [
+        word for segment in data['segments'] for word in segment['words']
+        if word['start'] <= duration
+    ]
     size = 10
 
     # Process chunks and build final output
@@ -61,4 +66,7 @@ def batch_word_timestamp(size:int,data:dict)->list:
     ]
     return final_output
         
-    
+def get_video_duration(file_path:str):
+    probe = ffmpeg.probe(file_path)
+    duration = float(probe['format']['duration'])
+    return duration

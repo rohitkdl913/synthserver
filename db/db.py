@@ -18,7 +18,7 @@ class DBManager:
     
     
     
-    def add_projects(self, projectName: str, projectId: str, translationType: str, video_file: str, thumbnail_file: str, user_email: str)->Project:
+    def add_projects(self, projectName: str, projectId: str, translationType: str, video_file: str, thumbnail_file: str, user_email: str,video_duration:int)->Project:
         with Session(self.engine) as session:
             project = Project(
                 id=projectId,
@@ -27,7 +27,8 @@ class DBManager:
                 status=False,
                 video_file=video_file,
                 thumbnail_file=thumbnail_file,
-                user_email=user_email
+                user_email=user_email,
+                video_duration=video_duration
             )
             session.add(project)
             session.commit()
